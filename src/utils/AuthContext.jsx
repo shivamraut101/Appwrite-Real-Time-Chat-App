@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { account } from "../appwriteConfig";
 import { useNavigate } from "react-router-dom";
 import { ID } from "appwrite";
@@ -16,11 +16,11 @@ export const AuthProvider = ({ children }) => {
       const response = await account.createEmailSession(email, password);
       console.log("LogIn Done", response);
       const accountdDetails = await account.get();
-      console.log("from handlelogin", accountdDetails);
+      // console.log("from handlelogin", accountdDetails);
       setUser(accountdDetails);
       navigate("/");
     } catch (error) {
-      console.error(error);
+      console.error("Login Error :: ",error);
     }
   };
 
@@ -36,40 +36,48 @@ export const AuthProvider = ({ children }) => {
       console.log("registered", response);
       await account.createEmailSession(email,password)
       const accountdDetails = await account.get();
-      console.log("From UserRegistered", accountdDetails);
+      // console.log("From UserRegistered", accountdDetails);
       setUser(accountdDetails);
       navigate("/");
     } catch (error) {
-      console.error(error);
+      console.error("Registration Error :: ",error);
     }
   };
 
-  const contextData = {
-    user,
-    handleInputLogin,
-    handleUserLogOut,
-    handleUserRegister,
-  };
+  const contextData = useMemo(() => {
+    return {
+      user,
+      handleInputLogin,
+      handleUserLogOut,
+      handleUserRegister,
+    };
+  }, [user, handleInputLogin, handleUserLogOut, handleUserRegister]);
+  
 
   useEffect(() => {
     getUserOnLoad();
-  }, []);
+  }, [navigate]);
 
   const getUserOnLoad = async () => {
     try {
+      setLoading(true);
       const accountdDetails = await account.get();
-      console.log("UserOnload", accountdDetails);
+      // console.log("UserOnload", accountdDetails);
       setUser(accountdDetails);
       navigate("/");
     } catch (error) {
-      console.error(error);
+      console.error("OnLoad Error :: ",error);
+    }finally{
+      setTimeout(() => {
+        setLoading(false);
+      }, 200);
     }
-    setLoading(false);
+    
   };
 
   return (
     <AuthContext.Provider value={contextData}>
-      {loading ? <p>Loading...</p> : children}
+      {loading ? <p className="message--wrapper">Loading...</p> : children}
     </AuthContext.Provider>
   );
 };

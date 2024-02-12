@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { databases } from "../appwriteConfig";
-import { ID, Query } from "appwrite";
+import { ID, Query, Role, Permission } from "appwrite";
 import { Trash2 } from "react-feather";
 import client from "../appwriteConfig";
+import Header from "../components/Header";
+import { useAuth } from "../utils/AuthContext";
 
 export const Room = () => {
+  const {user}=useAuth()
   const [messages, setMessages] = useState([]);
   const [messageBody, setMessageBody] = useState("");
 
@@ -13,15 +16,22 @@ export const Room = () => {
       e.preventDefault();
 
       let payload = {
+        user_id:user.$id,
+        username: user.name,
         body: messageBody,
       };
+
+      let permissions = [
+        Permission.write(Role.user(user.$id))
+      ]
 
       databases
         .createDocument(
           import.meta.env.VITE_DATABASE_ID,
           import.meta.env.VITE_COLLECTION_ID,
           ID.unique(),
-          payload
+          payload,
+          permissions
         )
         .then((response) => {
           //   setMessages((prev) => [response, ...prev]);
@@ -47,9 +57,9 @@ export const Room = () => {
       import.meta.env.VITE_COLLECTION_ID,
       message_id
     );
-    // setMessages((prev) =>
-    //   messages.filter((message) => message.$id !== message_id)
-    // );
+    setMessages((prev) =>
+      messages.filter((message) => message.$id !== message_id)
+    );
   };
 
   const dateString = (createdAt) => {
@@ -137,11 +147,13 @@ export const Room = () => {
 
   return (
     <main className="container">
+      <Header />
       <div className="room--container">
         <div>
           {messages
             .map((message) => (
               <div key={message.$id} className="message--wrapper">
+                <p>{message.username ? message.username : 'user'}</p>
                 <div className="message--body">
                   <span>{message.body}</span>
                 </div>
@@ -151,10 +163,14 @@ export const Room = () => {
                       {dateString(message.$createdAt)}
                     </p>
                     <div>
-                      <Trash2
+
+                      {message.$permissions.includes(`delete(\"user:${user.$id}\")`) && (
+                        <Trash2
                         className="delete--btn"
                         onClick={() => deleteMessage(message.$id)}
                       />
+                      )}
+                      
                     </div>
                   </div>
                 </div>
@@ -165,10 +181,11 @@ export const Room = () => {
       </div>
 
       <form id="message--form" onSubmit={handleSubmit}>
+        
         <div>
           <textarea
             required
-            maxlength="250"
+            maxLength={250}
             placeholder="Say something..."
             onChange={(e) => {
               setMessageBody(e.target.value);

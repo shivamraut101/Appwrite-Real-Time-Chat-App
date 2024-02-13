@@ -155,7 +155,7 @@ export const Room = () => {
               <div key={message.$id} className="message--wrapper">
                 <p>{message.username ? message.username : 'user'}</p>
                 <div className="message--body">
-                  <span>{message.body}</span>
+                  <span style={{color: "black"}}>{message.body}</span>
                 </div>
                 <div>
                   <div className="message--header">
@@ -191,6 +191,18 @@ export const Room = () => {
               setMessageBody(e.target.value);
             }}
             value={messageBody}
+            style={{
+              backgroundColor: '#1c1c1e', // Dark background color
+              color: '#ffffff', // White text color
+              border: 'none',
+              borderBottom: '1px solid #3a3a3c', // Darker border color
+              padding: '1rem',
+              borderRadius: '3px',
+              width: '100%',
+              fontSize: '18px',
+              outline: 'none',
+              resize: 'none',
+            }}
           ></textarea>
         </div>
 

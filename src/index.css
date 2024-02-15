@@ -167,6 +167,7 @@ border-radius: 20px;
 width:fit-content;
 max-width: 100%;
 word-wrap: break-word; /* added */
+margin-right: 30px;
 }
 
 .message--body--owner{

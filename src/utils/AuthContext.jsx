@@ -13,12 +13,17 @@ export const AuthProvider = ({ children }) => {
   const handleInputLogin = async (e, email, password) => {
     e.preventDefault();
     try {
-      const response = await account.createEmailSession(email, password);
+      const newPassword = password;
+      if (newPassword.length < 8) {
+        alert("Password must be at least 8 characters long.");
+      }else{
+        const response = await account.createEmailSession(email, password);
       console.log("LogIn Done", response);
       const accountdDetails = await account.get();
       // console.log("from handlelogin", accountdDetails);
       setUser(accountdDetails);
       navigate("/");
+      }
     } catch (error) {
       console.error("Login Error :: ",error);
     }
@@ -32,13 +37,19 @@ export const AuthProvider = ({ children }) => {
   const handleUserRegister = async (e, email, password, name) => {
     e.preventDefault();
     try {
-      let response = await account.create(ID.unique(), email, password, name);
+      const newPassword = password;
+      if (newPassword.length < 8) {
+        alert("Password must be at least 8 characters long.");
+      }else{
+        let response = await account.create(ID.unique(), email, password, name);
       console.log("registered", response);
       await account.createEmailSession(email,password)
       const accountdDetails = await account.get();
       // console.log("From UserRegistered", accountdDetails);
       setUser(accountdDetails);
       navigate("/");
+      }
+      
     } catch (error) {
       console.error("Registration Error :: ",error);
     }
